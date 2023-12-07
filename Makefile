@@ -13,7 +13,7 @@ OBJS = $(SRCS:.cpp=.o)
 ## compile
 CXX= c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-
+#
 .PHONY: clean, fclean, re, all
 
 all: $(NAME)

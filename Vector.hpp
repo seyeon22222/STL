@@ -67,7 +67,11 @@ class VectorIterator
 			return (temp);
 		}
 
-		VectorIterator operator+(const difference_type& a) const {return (ptr + a);}
+		VectorIterator operator+(const difference_type& a) const {
+			// std::cout << "*a: " << &a << std::endl;
+			// std::cout << sizeof(a) << std::endl;
+			return (ptr + a);
+		}
 		VectorIterator operator-(const difference_type& a) const {return (ptr - a);}
 		VectorIterator &operator+=(const difference_type& a)
 		{
@@ -160,7 +164,8 @@ public:
 
 	// range constructor
 	template <class InputIterator>
-	Vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(), typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
+	Vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(),
+	 typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	: v_allocator(alloc)
 	{
 		if (first > last)
@@ -169,7 +174,7 @@ public:
 		v_capacity = v_size;
 		v_first = v_allocator.allocate(v_capacity);
 		for (difference_type i = 0; i < static_cast<difference_type>(v_size); i++)
-			v_allocator.construct(v_first + i, *(first + i));
+			v_allocator.construct(v_first + i, *(v_first + i));
 	}
 	
 	//copy constructor(overloading operator=)
@@ -193,13 +198,14 @@ public:
 			v_first = v_allocator.allocate(v_capacity);
 		}
 		for (size_type i = 0; i < v_size; i++)
-			v_allocator.allocate(v_first + i, obj[i]);
+			v_allocator.construct(v_first + i, obj[i]);
 		return (*this);
 	}
 
 	//Vector desturctor 
 	~Vector(void)
 	{
+		
 		for(size_type i = 0; i < v_size; i++)
 			v_allocator.destroy(v_first + i);
 		if (v_capacity)
@@ -290,7 +296,252 @@ public:
 	//Element Access
 	reference operator[](size_type n) {return *(v_first + n);}
 	const_reference operator[](size_type n) const {return *(v_first + n);}
+	reference at (size_type n)
+	{
+		if (v_capacity < n)
+			throw std::out_of_range("Out of range");
+		return (*(v_first + n));
+	}
+	const_reference at (size_type n) const
+	{
+		if (v_capacity < n)
+			throw std::out_of_range("Out of range");
+		return (*(v_first + n));
+	}
+	reference front() {return (*(v_first));}
+	const_reference front() const {return (*(v_first));}
+	reference back() {return (*(v_first + v_size - 1));}
+	const_reference back() const {return (*(v_first + v_size - 1));}
+	T* data()
+	{
+		if (v_size == 0)
+			return (nullptr);
+		return (&at(0));
+	}
+	const T* data() const
+	{
+		if (v_size == 0)
+			return (nullptr);
+		return (&at(0));
+	}
 
+	//Modifiers
+	template <class InputIterator>
+	void assign(InputIterator first, InputIterator last,
+	 typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
+	{
+		if (first > last)
+			throw std::length_error("Vector");
+		difference_type sub = last - first;
+		for (size_type i = 0; i < v_size; i++)
+			v_allocator.destroy(v_first + i);
+		if (static_cast<difference_type>(v_capacity) < sub)
+		{
+			v_allocator.deallocate(v_first, v_capacity);
+			v_first = v_allocator.allocate(sub);
+			v_capacity = sub;
+		}
+		for (difference_type i = 0; i < sub; i++)
+		{
+			v_allocator.construct(v_first + i, *first);
+			first++;
+		}
+		v_size = sub;
+	}
+
+	void assign(size_type n, const value_type& val)
+	{
+		for (size_type i = 0; i < v_size; i++)
+			v_allocator.destroy(v_first + i);
+		if (v_capacity < n)
+		{
+			v_allocator.deallocate(v_first, v_capacity);
+			v_first = v_allocator.allocate(n);
+			v_capacity = n;
+		}
+		for (size_type i = 0; i < n; i++)
+			v_allocator.construct(v_first + i, val);
+		v_size = n;
+	}
+	void push_back (const value_type& val)
+	{
+		if (v_capacity == v_size)
+		{
+			if (v_capacity == 0)
+				reserve(1);
+			else
+				reserve(v_capacity * 2);
+		}
+		v_allocator.construct(v_first + v_size, val);
+		v_size++;
+	}
+
+	void pop_back()
+	{
+		if (v_size > 0)
+		{
+			v_allocator.destroy(v_first + v_size - 1);
+			v_size--;
+		}
+	}
+
+	iterator insert(iterator position, const value_type& val)
+	{
+		if (position < begin() || position > end())
+			throw std::length_error("Vector");
+		difference_type temp = position - begin();
+		if (v_capacity == v_size)
+		{
+			pointer new_first;
+			if (v_capacity == 0)
+				new_first = v_allocator.allocate(1);
+			else
+			{
+				new_first = v_allocator.allocate(v_capacity * 2);
+				for (size_type i = 0; i < v_size; i++)
+				{
+					v_allocator.construct(new_first + i, *(v_first + i));
+					v_allocator.destroy(v_first + i);
+				}
+				if (v_capacity)
+					v_allocator.deallocate(v_first, v_capacity);
+				v_first = new_first;
+				v_capacity = v_capacity * 2;
+			}
+		}
+		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
+		{
+			v_allocator.destroy(v_first + i);
+			v_allocator.construct(v_first + i, *(v_first + i - 1));
+		}
+		v_allocator.destroy(v_first + temp);
+		v_allocator.construct(v_first + temp, val);
+		v_size++;
+		return (begin() + temp);
+	}
+
+    void insert(iterator position, size_type n, const value_type& val)
+	{
+		if (position < begin() || position > end())
+			throw std::length_error("Vector");
+		difference_type temp = position - begin();
+		if (v_capacity == v_size)
+		{
+			pointer new_first;
+			if (v_capacity == 0)
+				new_first = v_allocator.allocate(n);
+			else
+			{
+				if (v_capacity * 2 > n)
+					v_capacity = v_capacity * 2;
+				new_first = v_allocator.allocate(v_capacity * 2);
+				for (size_type i = 0; i < v_size; i++)
+				{
+					v_allocator.construct(new_first + i, *(v_first + i));
+					v_allocator.destroy(v_first + i);
+				}
+				if (v_capacity)
+					v_allocator.deallocate(v_first, v_capacity);
+				v_first = new_first;
+			}
+		}
+		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
+		{
+			v_allocator.destroy(v_first + i);
+			v_allocator.construct(v_first + i + n - 1, *(v_first + i - 1));
+		}
+		for (size_type i = 0; i < n; i++)
+		{
+			v_first[i + temp] = val;
+			v_size++;
+		}
+	}
+
+	template <class InputIterator>
+	void insert(iterator position, InputIterator first, InputIterator last,
+	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
+	{
+		if (position < begin() || position > end() || first > last)
+			throw std::length_error("Vector");
+		difference_type sub = last - first;
+		difference_type temp = position - begin();
+		if (v_capacity == v_size)
+		{
+			pointer new_first;
+			if (v_capacity == 0)
+				new_first = v_allocator.allocate(static_cast<size_type>(sub));
+			else
+			{
+				if (v_capacity * 2 > static_cast<size_type>(sub))
+					v_capacity = v_capacity * 2;
+				new_first = v_allocator.allocate(v_capacity * 2);
+				for (size_type i = 0; i < v_size; i++)
+				{
+					v_allocator.construct(new_first + i, *(v_first + i));
+					v_allocator.destroy(v_first + i);
+				}
+				if (v_capacity)
+					v_allocator.deallocate(v_first, v_capacity);
+				v_first = new_first;
+			}
+		}
+		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
+		{
+			v_allocator.destroy(v_first + i);
+			v_allocator.construct(v_first + i + static_cast<size_type>(sub) - 1, *(v_first + i - 1));
+		}
+		for (size_type i = 0; i < static_cast<size_type>(sub); i++)
+		{
+			v_first[i + temp] = *(first + i);
+			v_size++;
+		}
+	}
+
+	iterator erase(iterator position)
+	{
+		if (position < begin() || position > end())
+			throw std::length_error("Vector");
+		// distance -> ptrdiff_t 를 반환( 인자의 거리를 반환해줌)
+		size_type sub = static_cast<size_type>(std::distance(begin(), position));
+		for (size_type i = sub; i < v_size - 1; i++)
+		{
+			v_allocator.destroy(v_first + i);
+			v_allocator.construct(v_first + i, *(v_first + i + 1));
+		}
+		v_size--;
+		v_allocator.destroy(v_first + v_size - 1);
+		return (iterator(v_first + sub));
+	}
+
+	iterator erase(iterator first, iterator last)
+	{
+		if (first > last)
+			throw std::length_error("Vector");
+		difference_type start = std::distance(begin(), first);
+		difference_type sub = std::distance(last, end());
+		while(first < last)
+		{
+			v_allocator.destroy(&(*first));
+			first++;
+		}
+		size_type i = start;
+		while (last < end())
+		{
+			if (v_first + start)
+				v_allocator.destroy(v_first + i);
+			v_allocator.construct(v_first + i, *last);
+			i++;
+			last++;
+		}
+		for (size_type i = start + sub; i < v_size; i++)
+			v_allocator.destroy(v_first + i);
+		v_size = start + sub;
+		if (last == end())
+			return (end());
+		else
+			return (iterator(v_first + start));
+	}
+	
 };
 }
 
