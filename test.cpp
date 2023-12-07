@@ -10,7 +10,8 @@ int main()
 
 	std::vector<int> a(1, 5);
 	ft::Vector<int> b(1, 5);
-	ft::Vector<int>::iterator c;
+	ft::Vector<int> c(1, 5);
+	std::vector<int> d(1, 5);
 	for (size_t i = 0; i < a.size(); i++)
 		std::cout << a[i];
 	std::cout << std::endl;
@@ -42,6 +43,13 @@ int main()
 	for (size_t i = 0; i < b.size(); i++)
 		std::cout << b[i];
 	std::cout << std::endl;
-	// std::cout << std::endl;
+	a.clear();
+	b.clear();
+	for (size_t i = 0; i < a.size(); i++)
+		std::cout << a[i];
+	std::cout << "a clear" << std::endl;
+	for (size_t i = 0; i < b.size(); i++)
+		std::cout << b[i];
+	std::cout << "b clear" << std::endl;
 	// system("leaks STL");
 }

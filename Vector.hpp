@@ -67,11 +67,7 @@ class VectorIterator
 			return (temp);
 		}
 
-		VectorIterator operator+(const difference_type& a) const {
-			// std::cout << "*a: " << &a << std::endl;
-			// std::cout << sizeof(a) << std::endl;
-			return (ptr + a);
-		}
+		VectorIterator operator+(const difference_type& a) const {return (ptr + a);}
 		VectorIterator operator-(const difference_type& a) const {return (ptr - a);}
 		VectorIterator &operator+=(const difference_type& a)
 		{
@@ -178,7 +174,7 @@ public:
 	}
 	
 	//copy constructor(overloading operator=)
-	Vector(const Vector& x) : v_size(0), v_capacity(0)
+	Vector (const Vector& x) : v_size(0), v_capacity(0)
 	{
 		*this = x;
 	}
@@ -541,8 +537,87 @@ public:
 		else
 			return (iterator(v_first + start));
 	}
-	
+
+	void swap(Vector& x)
+	{
+		size_type	temp_size = this->v_size;
+		size_type	temp_capacity = this->v_capacity;
+		pointer		temp_first = this->v_first;
+
+		this->v_size = x.v_size;
+		this->v_first = x.v_first;
+		this->v_capacity = x.v_capacity;
+
+		x.v_size = temp_size;
+		x.v_first = temp_first;
+		x.v_capacity = temp_capacity;
+	}
+
+	void clear(void)
+	{
+		for (size_type i = 0; i < v_size; i++)
+			v_allocator.destroy(v_first + i);
+		v_size = 0;
+	}
+
+	//Allocator
+	allocator_type get_allocator() const
+	{
+		return (v_allocator);
+	}
 };
+
+template <class T, class Alloc>
+bool operator==(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	if (lhs.size() == rhs.size())
+	{
+		for (size_t i = 0; i < lhs.size(); i++)
+		{
+			if ((*(lhs.v_first + i)) != (*(lhs.v_first + i)))
+				return (false);
+		}
+	}
+	else
+		return (false);
+	return (true);
 }
 
+template <class T, class Alloc>
+bool operator!=(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	return (lhs != rhs);
+}
+
+template <class T, class Alloc>
+bool operator<(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
+}
+
+template <class T, class Alloc>
+bool operator<= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	return !(lhs > rhs);
+}
+
+template <class T, class Alloc>
+bool operator>(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	return (rhs < lhs);
+}
+
+template <class T, class Alloc>
+bool operator>= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+{
+	return !(lhs < rhs);
+}
+
+template <class T, class Alloc>
+void swap (Vector<T,Alloc>& x, Vector<T,Alloc>& y)
+{
+	x.swap(y);
+}
+
+}
 #endif
