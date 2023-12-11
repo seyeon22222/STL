@@ -123,11 +123,11 @@ class VectorIterator
 		{ return (&(*lhs)) - &(*rhs); }
 
 		template<typename A>
-		friend VectorIterator<A> operator+(typename VectorIterator<A>::differnce_type &lhs, typename VectorIterator<A>::differnce_type &rhs)
+		friend VectorIterator<A> operator+(typename VectorIterator<A>::difference_type &lhs, typename VectorIterator<A>::difference_type &rhs)
 		{ return (lhs + rhs);}
 
 		template<typename A>
-		friend VectorIterator<A> operator-(typename VectorIterator<A>::differnce_type &lhs, typename VectorIterator<A>::differnce_type &rhs)
+		friend VectorIterator<A> operator-(typename VectorIterator<A>::difference_type &lhs, typename VectorIterator<A>::difference_type &rhs)
 		{ return (lhs - rhs);}
 };
 

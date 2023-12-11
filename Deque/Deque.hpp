@@ -25,9 +25,13 @@ public:
 	DequeIterator(void) : ptr(nullptr) {}
 	DequeIterator(pointer *a) : ptr(a) {}
 	virtual ~DequeIterator(void) {}
-	DequeIterator(const DequeIterator<typename ft::remove_const<value_type>::type>& obj)
+	DequeIterator(const DequeIterator& obj)	{*this = obj;}
+	DequeIterator &operator=(const DequeIterator &obj)
 	{
-		ptr = obj.getPtr();
+		if (*this == obj)
+			return (*this);
+		ptr = obj.ptr;
+		return (*this);
 	}
 	pointer* getPtr(void) const {return (ptr);}
 	DequeIterator &operator++()
@@ -76,42 +80,42 @@ public:
 	public:
 		template<typename A, typename B>
 		friend bool operator==(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) == &(*rhs); }
+		{ return (lhs.ptr == rhs.ptr); }
 
 		template<typename A, typename B>
 		friend bool operator!=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) != &(*rhs); }
+		{ return (lhs.ptr != rhs.ptr); }
 
 		template<typename A, typename B>
 		friend bool operator<(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) < &(*rhs); }
+		{ return (lhs.ptr < rhs.ptr); }
 
 		template<typename A, typename B>
 		friend bool operator<=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) <= &(*rhs); }
+		{ return (lhs.ptr <= rhs.ptr); }
 
 		template<typename A, typename B>
 		friend bool operator>(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) > &(*rhs); }
+		{ return (lhs.ptr > rhs.ptr); }
 
 		template<typename A, typename B>
 		friend bool operator>=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) >= &(*rhs); }
+		{ return (lhs.ptr >= rhs.ptr); }
 
 		template<typename A, typename B>
 		friend difference_type operator+(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) + &(*rhs); }
+		{return (lhs.ptr + rhs.ptr);}
 
 		template<typename A, typename B>
 		friend difference_type operator-(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
-		{ return (&(*lhs)) - &(*rhs); }
+		{return (lhs.ptr - rhs.ptr);}
 
 		template<typename A>
-		friend DequeIterator<A> operator+(typename DequeIterator<A>::differnce_type &lhs, typename DequeIterator<A>::differnce_type &rhs)
+		friend DequeIterator<A> operator+(typename DequeIterator<A>::difference_type &lhs, typename DequeIterator<A>::difference_type &rhs)
 		{ return (lhs + rhs);}
 
 		template<typename A>
-		friend DequeIterator<A> operator-(typename DequeIterator<A>::differnce_type &lhs, typename DequeIterator<A>::differnce_type &rhs)
+		friend DequeIterator<A> operator-(typename DequeIterator<A>::difference_type &lhs, typename DequeIterator<A>::difference_type &rhs)
 		{ return (lhs - rhs);}
 };
 
@@ -158,12 +162,34 @@ private:
 			dq_offset = temp_offset;
 		}
 	}
-
+	void pre_insert(size_type count, size_type index) {
+		// Capacity
+		if (this->dq_offset + this->dq_size + count - 1 >= this->dq_capacity) {
+			this->reserve(this->dq_capacity + this->dq_offset + this->dq_size + count);
+		}
+		// If there is not enough space on the right move everything to the right
+		size_type move_start = this->dq_offset;
+		if (this->dq_offset + count + this->dq_size > this->dq_capacity) {
+			size_type missing_space = (this->dq_offset + count + this->dq_size) - this->dq_capacity;
+			// everything between dq_offset and relative_index is moved to the right
+			for (size_t i = 0; i < missing_space; i++) {
+				this->dq_first[this->dq_offset - missing_space + i] = this->dq_first[this->dq_offset + i];
+			}
+			this->dq_offset -= missing_space;
+		}
+		// Move everything to the right
+		size_type relative_index = move_start + index;
+		for (size_type j = move_start + this->dq_size; j > move_start && j >= relative_index; --j) {
+			this->dq_first[j + count - 1] = this->dq_first[j - 1];
+		}
+	}
 
 public:
+	// default constructor
 	explicit Deque (const allocator_type& alloc = allocator_type())
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc) {}
 
+	// fill constructor
 	explicit Deque (size_type n, const value_type& val = value_type(),
 	 const allocator_type& alloc = allocator_type())
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
@@ -171,23 +197,32 @@ public:
 		this->assign(n, val);
 	}
 
+	// range constructor
 	template <class InputIterator>
 	Deque (InputIterator first, InputIterator last,
 	 const allocator_type& alloc = allocator_type(),
 	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
 	{
+		
 		this->assign(first, last);
 	}
 
 	Deque (const Deque& x) : dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0)
-	{
-		this->assign(x.begin(), x.end());
-	}
+	{*this = x;}
 
-	Deque &operator=(const Deque &x)
+	Deque &operator=(const Deque &obj)
 	{
-		this->assign(x.begin(), x.end());
+		if (this == &obj)
+			return (*this);
+		this->clear();
+		if (dq_capacity < obj.dq_size)
+			reserve(obj.dq_size);
+		dq_size = obj.dq_size;
+		dq_offset = (dq_capacity / 2) - ((dq_capacity - dq_size) / 2);
+		for (size_type i = 0; i < dq_size; i++)
+			dq_first[dq_offset + i] = new value_type(*(obj.dq_first[obj.dq_offset + i]));
+		return (*this);
 	}
 
 	virtual ~Deque() 
@@ -301,9 +336,8 @@ public:
 	{
 		if (dq_offset == 0)
 			reserve(dq_capacity + 1);
-		this->dq_first[dq_offset - 1] = new value_type(val);
+		this->dq_first[--dq_offset] = new value_type(val);
 		dq_size++;
-		dq_offset--;
 	}
 
 	void pop_back()
@@ -325,20 +359,19 @@ public:
 			throw std::length_error("Deque");
 		if (n == 0)
 			return ;
-		if (dq_capacity == dq_size)
-			reserve(dq_capacity * 2);
 		size_type i = position.getPtr() - dq_first - dq_offset;
+		pre_insert(n, i);
 		size_type index = dq_offset + i;
 		for (size_type j = 0; j < n; j++)
 		{
 			dq_first[index + j - 1] = new value_type(val);
 			dq_size++;
-			dq_offset--;
 		}
 	}
 
 	iterator insert (iterator position, const value_type& val)
 	{
+		std::cout << "here22\n";
 		if (position < begin() || position > end())
 			throw std::length_error("Deque");
 		if (dq_capacity == dq_size)
@@ -354,14 +387,15 @@ public:
 	{
 		if (position < begin() || position > end() || first > last)
 			throw std::length_error("Deque");
-		if (dq_capacity == dq_size)
-			reserve(dq_capacity * 2);
-		size_type index = position.getPtr() - dq_first - dq_offset;
 		size_type sub = last - first;
-		for (size_type i = 0; i < sub; i++)
+		size_type index = position.getPtr() - dq_first - dq_offset;
+		pre_insert(sub, index);
+		size_type start = index + dq_offset;
+		size_type i = 0;
+		while (first != last) 
 		{
-			dq_first[index + i] = new value_type(*first);
-			first++;
+			this->dq_first[start + i++] = new value_type(*first);
+			++first;
 			dq_size++;
 		}
 	}

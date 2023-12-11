@@ -28,7 +28,7 @@ int main()
 
 
 
-	a.insert(a.begin() + 1, aaaa.begin(), aaaa.end());
+	a.insert(a.begin() + 1, 5, pp);
 	for (size_t i = 0; i < a.size(); i++)
 	{
 		for (size_t j = 0; j < a[i].size(); j++)
@@ -55,7 +55,7 @@ int main()
 		qq.push_back(i);
 	b.push_front(qq);
 	ft::Deque<ft::Vector<int> > bbbb(b);
-	b.insert(b.begin(), bbbb.begin(), bbbb.end());
+	b.insert(b.begin() + 1, 5, qq);
 	for (size_t i = 0; i < b.size(); i++)
 	{
 		for (size_t j = 0; j < b[i].size(); j++)
@@ -65,5 +65,7 @@ int main()
 	std::cout << std::endl;
 
 	// system("leaks STL");	
+	
+
     return 0;
 }
