@@ -160,10 +160,11 @@ public:
 
 	// range constructor
 	template <class InputIterator>
-	Vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type(),
-	 typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
+	Vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()
+	, typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	: v_allocator(alloc)
 	{
+		std::cout << "iterator constructor" << std::endl;
 		if (first > last)
 			throw std::length_error("vector");
 		v_size = last - first;

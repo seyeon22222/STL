@@ -167,7 +167,7 @@ public:
 	Node(Node *_prev, T const& _data, Node *_next=nullptr) :
 	 prev(_prev), data(_data), next(_next) {}
 	virtual ~Node(void);
-	Node Node(const Node& obj) {*this = obj;}
+	Node(const Node& obj) {*this = obj;}
 	Node &operator=(const Node& obj)
 	{
 		if (*this == obj)

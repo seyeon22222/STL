@@ -5,8 +5,8 @@
 #include <deque>
 int main()
 {
-	std::deque<int>	a;
-
-	for (int i = 0; i < 5; i++) a.push_back(i);
-	
+	ft::Vector<int> a(1, 5);
+	for (size_t i = 0; i < a.size(); i++)
+		std::cout << a[i];
+	std::cout << std::endl;
 }
