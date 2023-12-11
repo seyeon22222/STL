@@ -15,7 +15,7 @@ SRCS = test.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 ## compile
-CXX= c++
+CXX= c++ -fsanitize=address -g
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98 $(addprefix -I,$(INC_DIRS))
 #
 .PHONY: clean, fclean, re, all

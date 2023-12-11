@@ -25,40 +25,34 @@ public:
 	DequeIterator(void) : ptr(nullptr) {}
 	DequeIterator(pointer *a) : ptr(a) {}
 	virtual ~DequeIterator(void) {}
-	DequeIterator(const DequeIterator<typename remove_const<value_type>::type>& obj) : ptr(obj.ptr) {}
-
-	//operator
-	DequeIterator<value_type> &operator=(const DequeIterator<typename remove_const<value_type>::type>& obj)
+	DequeIterator(const DequeIterator<typename ft::remove_const<value_type>::type>& obj)
 	{
-		if (*this == obj)
-			return (*this);
-		ptr = obj.ptr;
-		return (*this);
+		ptr = obj.getPtr();
 	}
-
+	pointer* getPtr(void) const {return (ptr);}
 	DequeIterator &operator++()
 	{
-		++ptr;
+		++this->ptr;
 		return (*this);
 	}
 
 	DequeIterator operator++(int)
 	{
 		DequeIterator temp(*this);
-		++ptr;
+		++this->ptr;
 		return (temp);
 	}
 
 	DequeIterator &operator--()
 	{
-		--ptr;
+		--this->ptr;
 		return (*this);
 	}
 
 	DequeIterator operator--(int)
 	{
 		DequeIterator temp(*this);
-		--ptr;
+		--this->ptr;
 		return (temp);
 	}
 
@@ -66,19 +60,59 @@ public:
 	DequeIterator operator-(const difference_type& a) const {return (ptr - a);}
 	DequeIterator &operator+=(const difference_type& a)
 	{
-		ptr += a;
+		this->ptr += a;
 		return (*this);
 	}
 
 	DequeIterator &operator-=(const difference_type& a) const
 	{
-		ptr -= a;
+		this->ptr -= a;
 		return (*this);
 	}
 	
-	reference operator*() const {return *ptr;}
-	pointer operator->() const {return ptr;}
-	reference operator[](difference_type n) const {return *(ptr + n);}
+	reference operator*() const {return **this->ptr;}
+	pointer operator->() const {return *this->ptr;}
+	reference operator[](difference_type n) const {return **(this->ptr + n);}
+	public:
+		template<typename A, typename B>
+		friend bool operator==(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) == &(*rhs); }
+
+		template<typename A, typename B>
+		friend bool operator!=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) != &(*rhs); }
+
+		template<typename A, typename B>
+		friend bool operator<(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) < &(*rhs); }
+
+		template<typename A, typename B>
+		friend bool operator<=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) <= &(*rhs); }
+
+		template<typename A, typename B>
+		friend bool operator>(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) > &(*rhs); }
+
+		template<typename A, typename B>
+		friend bool operator>=(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) >= &(*rhs); }
+
+		template<typename A, typename B>
+		friend difference_type operator+(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) + &(*rhs); }
+
+		template<typename A, typename B>
+		friend difference_type operator-(const DequeIterator<A>& lhs, const DequeIterator<B>& rhs)
+		{ return (&(*lhs)) - &(*rhs); }
+
+		template<typename A>
+		friend DequeIterator<A> operator+(typename DequeIterator<A>::differnce_type &lhs, typename DequeIterator<A>::differnce_type &rhs)
+		{ return (lhs + rhs);}
+
+		template<typename A>
+		friend DequeIterator<A> operator-(typename DequeIterator<A>::differnce_type &lhs, typename DequeIterator<A>::differnce_type &rhs)
+		{ return (lhs - rhs);}
 };
 
 
@@ -91,7 +125,7 @@ public:
 	typedef value_type&							reference;
 	typedef const value_type&					const_reference;
 	typedef typename Alloc::pointer				pointer;
-	typedef typename Alloc::cosnt_pointer		const_pointer;
+	typedef typename Alloc::const_pointer		const_pointer;
 	typedef DequeIterator<value_type>			iterator;
 	typedef DequeIterator<const value_type>		const_iterator;
 	typedef Reverse_iterator<iterator>			reverse_iterator;
@@ -131,7 +165,8 @@ public:
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc) {}
 
 	explicit Deque (size_type n, const value_type& val = value_type(),
-	 const allocator_type& alloc = allocator_type()) : dq_first(nullptr), dq_capacity(0), dq_size(0), dq_offset(0), dq_allocator(alloc)
+	 const allocator_type& alloc = allocator_type())
+	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
 	{
 		this->assign(n, val);
 	}
@@ -140,12 +175,12 @@ public:
 	Deque (InputIterator first, InputIterator last,
 	 const allocator_type& alloc = allocator_type(),
 	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
-	: dq_first(nullptr), dq_capacity(0), dq_size(0), dq_offset(0), dq_allocator(alloc)
+	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
 	{
 		this->assign(first, last);
 	}
 
-	Deque (const Deque& x) : dq_first(nullptr), dq_capacity(0), dq_size(0), dq_offset(0)
+	Deque (const Deque& x) : dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0)
 	{
 		this->assign(x.begin(), x.end());
 	}
@@ -161,8 +196,10 @@ public:
 		::operator delete(dq_first);
 	}
 
+
+	size_type getOffset() {return (dq_offset);}
 	//Iterators
-	iterator begin() {return (iterator(dq_first + dq_offset));}
+	iterator begin() {return (iterator(this->dq_first + this->dq_offset));}
 	const_iterator begin() const {return (const_iterator(dq_first + dq_offset));}
 	iterator end() {return (iterator(dq_first + dq_offset + dq_size));}
 	const_iterator end() const {return (const_iterator(dq_first + dq_offset + dq_size));}
@@ -173,6 +210,7 @@ public:
 
 	//Capacity
 	size_type size() const {return (dq_size);}
+	size_type capacity() const {return (dq_capacity);}
 	size_type max_size() const {return (dq_allocator.max_size());}
 	bool empty() const {return (dq_size == 0);}
 
@@ -199,8 +237,8 @@ public:
 	}
 
 	//Element Access
-	reference operator[](size_type n) {return (*dq_first[dq_offset + n]);}
-	const_reference operator[](size_type n) const {return (*dq_first[dq_offset + n]);}
+	reference operator[](size_type n) {return (*this->dq_first[dq_offset + n]);}
+	const_reference operator[](size_type n) const {return (*this->dq_first[dq_offset + n]);}
 
 	reference at (size_type n)
 	{
@@ -216,14 +254,15 @@ public:
 		return (*(dq_first[dq_offset + n]));
 	}
 
-	reference front() {return (operator[](0));}
-	const_reference front() const {return (operator[](0));}
-	reference back() {return (operator[](dq_size - 1));}
-	const_reference back() const {return (operator[](dq_size - 1));}
+
+	reference front() {return (this->operator[](0));}
+	const_reference front() const {return (this->operator[](0));}
+	reference back() {return (this->operator[](dq_size - 1));}
+	const_reference back() const {return (this->operator[](dq_size - 1));}
 
 	//Modifiers
 	template <class InputIterator>
-	void assign(iterator first, iterator last,
+	void assign(InputIterator first, InputIterator last,
 	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0) 
 	{
 		if (first > last)
@@ -261,9 +300,10 @@ public:
 	void push_front (const value_type& val)
 	{
 		if (dq_offset == 0)
-			reserve(dq_capacity * 2);
-		dq_first[dq_offset] = new value_type(val);
+			reserve(dq_capacity + 1);
+		this->dq_first[dq_offset - 1] = new value_type(val);
 		dq_size++;
+		dq_offset--;
 	}
 
 	void pop_back()
@@ -287,12 +327,13 @@ public:
 			return ;
 		if (dq_capacity == dq_size)
 			reserve(dq_capacity * 2);
-		size_type i = position.ptr - dq_first - dq_offset;
+		size_type i = position.getPtr() - dq_first - dq_offset;
 		size_type index = dq_offset + i;
 		for (size_type j = 0; j < n; j++)
 		{
-			dq_first[index + j] = new value_type(val);
+			dq_first[index + j - 1] = new value_type(val);
 			dq_size++;
+			dq_offset--;
 		}
 	}
 
@@ -302,7 +343,7 @@ public:
 			throw std::length_error("Deque");
 		if (dq_capacity == dq_size)
 			reserve(dq_capacity * 2);
-		size_type i = position.ptr - dq_first - dq_offset;
+		size_type i = position.getPtr() - dq_first - dq_offset;
 		insert(position, 1, val);
 		return (dq_first + dq_offset + i);
 	}
@@ -315,7 +356,7 @@ public:
 			throw std::length_error("Deque");
 		if (dq_capacity == dq_size)
 			reserve(dq_capacity * 2);
-		size_type index = position.ptr - dq_first - dq_offset;
+		size_type index = position.getPtr() - dq_first - dq_offset;
 		size_type sub = last - first;
 		for (size_type i = 0; i < sub; i++)
 		{
@@ -327,30 +368,53 @@ public:
 
 	iterator erase (iterator position)
 	{
+		std::cout << &position << std::endl;
+		std::cout << (dq_first + dq_offset) << std::endl;
 		if (position < begin() || position > end())
 			throw std::length_error("Deque");
+		iterator temp(position);
+		++temp;
+		return (erase(position, temp));
 	}
 
 	iterator erase (iterator first, iterator last)
 	{
-		if (first > last)
-			throw std::length_error("Deque");
+		// if (first > last)
+		// 	throw std::length_error("Deque");
 		size_type sub = last - first;
-		size_type start_index = first.ptr - dq_first;
-		size_type end_index = last.ptr - dq_first;
+		std::cout << sub << std::endl;
+		size_type start_index = first.getPtr() - dq_first;
+		size_type end_index = last.getPtr() - dq_first;
+		for (size_type i = 0; i < 32; i++)
+			std::cout << dq_first[i] << std::endl;
+		std::cout << "---------------\n";
 		for (size_type i = 0; i < sub; i++)
 		{
-			delete dq_first[start_index + i];
+			std::cout << &dq_first[start_index + i] << std::endl;
+			delete this->dq_first[start_index + i];
 			dq_size--;
 		}
 		for (size_type i = dq_offset + dq_size, j = 0; i > end_index; i--, j++ )
 			dq_first[start_index + j] = dq_first[i - 1];
-		return (end())
+		return (end());
 	}
 
 	void swap (Deque& x)
 	{
-		
+		size_type temp_size = dq_size;
+		size_type temp_capacity = dq_capacity;
+		size_type temp_offset = dq_offset;
+		pointer *temp = dq_first;
+
+		dq_size = x.dq_size;
+		dq_capacity = x.dq_capacity;
+		dq_offset = x.dq_offset;
+		dq_first = x.dq_first;
+
+		x.dq_size = temp_size;
+		x.dq_capacity = temp_capacity;
+		x.dq_offset = temp_offset;
+		x.dq_first = temp;
 	}
 
 	void clear()
@@ -361,7 +425,53 @@ public:
 		this->dq_size = 0;
 	}
 
+	//Allocator
+	allocator_type get_allocator() const {return (dq_allocator);}
+
 };
+
+template <class T, class Alloc>
+bool operator== (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{
+	if (lhs.size() == rhs.size())
+	{
+		for (size_t i = 0; i < lhs.size(); i++)
+		{
+			if (lhs[i] != rhs[i])
+				return (false);
+		}
+	}
+	else
+		return (false);
+	return (true);
+}
+
+template <class T, class Alloc>
+bool operator!= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{return !(lhs == rhs);}
+
+template <class T, class Alloc>
+bool operator<  (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));}
+
+template <class T, class Alloc>
+bool operator<= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{return (!(rhs < lhs));}
+
+template <class T, class Alloc>
+bool operator>  (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{return (rhs < lhs);}
+
+template <class T, class Alloc>
+bool operator>= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+{return (!(lhs < rhs));}
+
+template <class T, class Alloc>
+void swap (Deque<T,Alloc>& x, Deque<T,Alloc>& y) 
+{
+	x.swap(y);
+}
+
 }
 
 #endif

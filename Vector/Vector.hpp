@@ -86,6 +86,10 @@ class VectorIterator
 		reference operator[](difference_type n) const {return *(ptr + n);}
 
 	public:
+		template<class A>
+		friend VectorIterator operator+(A a, const VectorIterator& lhs)
+		{return (lhs.ptr + a);}
+
 		template<typename A, typename B>
 		friend bool operator==(const VectorIterator<A>& lhs, const VectorIterator<B>& rhs)
 		{ return (&(*lhs)) == &(*rhs); }
