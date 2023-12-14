@@ -162,26 +162,25 @@ private:
 			dq_offset = temp_offset;
 		}
 	}
-	void pre_insert(size_type count, size_type index) {
-		// Capacity
-		if (this->dq_offset + this->dq_size + count - 1 >= this->dq_capacity) {
+
+	void pre_insert(size_type count, size_type index) 
+	{
+		// 용량이 부족한 경우
+		if (this->dq_offset + this->dq_size + count - 1 >= this->dq_capacity)
 			this->reserve(this->dq_capacity + this->dq_offset + this->dq_size + count);
-		}
-		// If there is not enough space on the right move everything to the right
+		// 왼쪽 공간이 부족한 경우, 왼쪽에 있는 값들을 오른쪽으로 이동
 		size_type move_start = this->dq_offset;
-		if (this->dq_offset + count + this->dq_size > this->dq_capacity) {
+		if (this->dq_offset + count + this->dq_size > this->dq_capacity) 
+		{
 			size_type missing_space = (this->dq_offset + count + this->dq_size) - this->dq_capacity;
-			// everything between dq_offset and relative_index is moved to the right
-			for (size_t i = 0; i < missing_space; i++) {
+			for (size_t i = 0; i < missing_space; i++)
 				this->dq_first[this->dq_offset - missing_space + i] = this->dq_first[this->dq_offset + i];
-			}
 			this->dq_offset -= missing_space;
 		}
-		// Move everything to the right
+		// 삽입을 위한 공간을 만들고 값들을 이동
 		size_type relative_index = move_start + index;
-		for (size_type j = move_start + this->dq_size; j > move_start && j >= relative_index; --j) {
+		for (size_type j = move_start + this->dq_size; j > move_start && j >= relative_index; --j)
 			this->dq_first[j + count - 1] = this->dq_first[j - 1];
-		}
 	}
 
 public:
@@ -371,7 +370,6 @@ public:
 
 	iterator insert (iterator position, const value_type& val)
 	{
-		std::cout << "here22\n";
 		if (position < begin() || position > end())
 			throw std::length_error("Deque");
 		if (dq_capacity == dq_size)
@@ -402,8 +400,6 @@ public:
 
 	iterator erase (iterator position)
 	{
-		std::cout << &position << std::endl;
-		std::cout << (dq_first + dq_offset) << std::endl;
 		if (position < begin() || position > end())
 			throw std::length_error("Deque");
 		iterator temp(position);
@@ -413,19 +409,20 @@ public:
 
 	iterator erase (iterator first, iterator last)
 	{
-		// if (first > last)
-		// 	throw std::length_error("Deque");
+		if (first > last)
+			throw std::length_error("Deque");
 		size_type sub = last - first;
-		std::cout << sub << std::endl;
 		size_type start_index = first.getPtr() - dq_first;
 		size_type end_index = last.getPtr() - dq_first;
+		std::cout << start_index << " " << end_index << std::endl;
+		std::cout << "offset : " << dq_offset << std::endl;
 		for (size_type i = 0; i < 32; i++)
-			std::cout << dq_first[i] << std::endl;
-		std::cout << "---------------\n";
+		{
+			std::cout << i << ": " << dq_first[i] << std::endl;
+		}
 		for (size_type i = 0; i < sub; i++)
 		{
-			std::cout << &dq_first[start_index + i] << std::endl;
-			delete this->dq_first[start_index + i];
+			delete this->dq_first[end_index + i];
 			dq_size--;
 		}
 		for (size_type i = dq_offset + dq_size, j = 0; i > end_index; i--, j++ )

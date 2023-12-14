@@ -36,7 +36,7 @@ public:
 		base_iterator = other.base_iterator;
 	}
 
-	Reverse_iterator base(void) const {return (base_iterator);}
+	iterator_type base(void) const {return (base_iterator);}
 
 	reference operator*() const
 	{

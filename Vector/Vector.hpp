@@ -11,7 +11,7 @@
 namespace ft
 {
 template< class T, class Allocator = std::allocator<T> >
-class Vector
+class vector
 {
 // Vector Iterator => random_access_iterator
 template<typename C>
@@ -148,13 +148,18 @@ private:
 	pointer			v_first;
 	size_type		v_size, v_capacity;
 	allocator_type	v_allocator;
+
+	void copy_construct(size_type idx, const_reference val) 
+	{
+		new(&this->v_first[idx]) value_type(val);
+	}
 public:
 	// default
-	explicit Vector(const allocator_type& alloc = allocator_type())
+	explicit vector(const allocator_type& alloc = allocator_type())
 	: v_first(nullptr), v_size(0), v_capacity(0), v_allocator(alloc) {};
 
 	// fill constructor
-	explicit Vector(size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type())
+	explicit vector(size_type n, const value_type& val = value_type(), const allocator_type& alloc = allocator_type())
 	 : v_size(n), v_capacity(n), v_allocator(alloc)
 	{
 		v_first = v_allocator.allocate(n);
@@ -164,7 +169,7 @@ public:
 
 	// range constructor
 	template <class InputIterator>
-	Vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()
+	vector(InputIterator first, InputIterator last, const allocator_type& alloc = allocator_type()
 	, typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	: v_allocator(alloc)
 	{
@@ -179,12 +184,12 @@ public:
 	}
 	
 	//copy constructor(overloading operator=)
-	Vector (const Vector& x) : v_size(0), v_capacity(0)
+	vector (const vector& x) : v_size(0), v_capacity(0)
 	{
 		*this = x;
 	}
 
-	Vector &operator=(const Vector& obj)
+	vector &operator=(const vector& obj)
 	{
 		if (this == &obj)
 			return (*this);
@@ -203,8 +208,8 @@ public:
 		return (*this);
 	}
 
-	//Vector desturctor 
-	~Vector(void)
+	//vector desturctor 
+	~vector(void)
 	{
 		
 		for(size_type i = 0; i < v_size; i++)
@@ -332,7 +337,7 @@ public:
 	 typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	{
 		if (first > last)
-			throw std::length_error("Vector");
+			throw std::length_error("vector");
 		difference_type sub = last - first;
 		for (size_type i = 0; i < v_size; i++)
 			v_allocator.destroy(v_first + i);
@@ -386,122 +391,48 @@ public:
 		}
 	}
 
-	iterator insert(iterator position, const value_type& val)
-	{
-		if (position < begin() || position > end())
-			throw std::length_error("Vector");
-		difference_type temp = position - begin();
-		if (v_capacity == v_size)
-		{
-			pointer new_first;
-			if (v_capacity == 0)
-				new_first = v_allocator.allocate(1);
-			else
-			{
-				new_first = v_allocator.allocate(v_capacity * 2);
-				for (size_type i = 0; i < v_size; i++)
-				{
-					v_allocator.construct(new_first + i, *(v_first + i));
-					v_allocator.destroy(v_first + i);
-				}
-				if (v_capacity)
-					v_allocator.deallocate(v_first, v_capacity);
-				v_first = new_first;
-				v_capacity = v_capacity * 2;
-			}
-		}
-		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
-		{
-			v_allocator.destroy(v_first + i);
-			v_allocator.construct(v_first + i, *(v_first + i - 1));
-		}
-		v_allocator.destroy(v_first + temp);
-		v_allocator.construct(v_first + temp, val);
-		v_size++;
-		return (begin() + temp);
+	iterator insert(iterator position, const_reference val) {
+		this->insert(position, 1, val);
+		return (++position);
 	}
-
-    void insert(iterator position, size_type n, const value_type& val)
-	{
-		if (position < begin() || position > end())
-			throw std::length_error("Vector");
-		difference_type temp = position - begin();
-		if (v_capacity == v_size)
+	void insert(iterator position, size_type size, const_reference val) {
+		iterator it = this->begin();
+		if (this->v_size + size >= this->v_capacity)
+			this->reserve(this->v_size + size);
+		size_type i = 0;
+		while (it != position) 
 		{
-			pointer new_first;
-			if (v_capacity == 0)
-				new_first = v_allocator.allocate(n);
-			else
-			{
-				if (v_capacity * 2 > n)
-					v_capacity = v_capacity * 2;
-				new_first = v_allocator.allocate(v_capacity * 2);
-				for (size_type i = 0; i < v_size; i++)
-				{
-					v_allocator.construct(new_first + i, *(v_first + i));
-					v_allocator.destroy(v_first + i);
-				}
-				if (v_capacity)
-					v_allocator.deallocate(v_first, v_capacity);
-				v_first = new_first;
-			}
+			++it;
+			++i;
 		}
-		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
-		{
-			v_allocator.destroy(v_first + i);
-			v_allocator.construct(v_first + i + n - 1, *(v_first + i - 1));
-		}
-		for (size_type i = 0; i < n; i++)
-		{
-			v_first[i + temp] = val;
-			v_size++;
-		}
+		for (size_type j = this->v_size; j >= 1 && j >= i; j--)
+			this->copy_construct(i + j + size - 1, this->v_container[j - 1]);
+		for (size_type j = 0; j < size; j++)
+			this->copy_construct(i + j, val);
+		this->v_size += size;
 	}
-
-	template <class InputIterator>
-	void insert(iterator position, InputIterator first, InputIterator last,
-	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
-	{
-		if (position < begin() || position > end() || first > last)
-			throw std::length_error("Vector");
-		difference_type sub = last - first;
-		difference_type temp = position - begin();
-		if (v_capacity == v_size)
+	void insert(iterator position, iterator first, iterator last) {
+		size_type size = last - first;
+		iterator it = this->begin();
+		if (this->v_size + size >= this->v_capacity)
+			this->reserve(this->v_size + size);
+		size_type i = 0;
+		while (it != position) 
 		{
-			pointer new_first;
-			if (v_capacity == 0)
-				new_first = v_allocator.allocate(static_cast<size_type>(sub));
-			else
-			{
-				if (v_capacity * 2 > static_cast<size_type>(sub))
-					v_capacity = v_capacity * 2;
-				new_first = v_allocator.allocate(v_capacity * 2);
-				for (size_type i = 0; i < v_size; i++)
-				{
-					v_allocator.construct(new_first + i, *(v_first + i));
-					v_allocator.destroy(v_first + i);
-				}
-				if (v_capacity)
-					v_allocator.deallocate(v_first, v_capacity);
-				v_first = new_first;
-			}
+			++it;
+			++i;
 		}
-		for (size_type i = v_size; i > static_cast<size_type>(temp); i--)
-		{
-			v_allocator.destroy(v_first + i);
-			v_allocator.construct(v_first + i + static_cast<size_type>(sub) - 1, *(v_first + i - 1));
-		}
-		for (size_type i = 0; i < static_cast<size_type>(sub); i++)
-		{
-			v_first[i + temp] = *(first + i);
-			v_size++;
-		}
+		for (size_type j = this->v_size - 1; j > i + 1; j++)
+			this->copy_construct(i + j + size, this->v_container[ + j - 1]);
+		for (size_type j = 0; j < size; j++)
+			this->copy_construct(i + j, *first++);
+		this->v_size += size;
 	}
 
 	iterator erase(iterator position)
 	{
 		if (position < begin() || position > end())
-			throw std::length_error("Vector");
+			throw std::length_error("vector");
 		// distance -> ptrdiff_t 를 반환( 인자의 거리를 반환해줌)
 		size_type sub = static_cast<size_type>(std::distance(begin(), position));
 		for (size_type i = sub; i < v_size - 1; i++)
@@ -517,7 +448,7 @@ public:
 	iterator erase(iterator first, iterator last)
 	{
 		if (first > last)
-			throw std::length_error("Vector");
+			throw std::length_error("vector");
 		difference_type start = std::distance(begin(), first);
 		difference_type sub = std::distance(last, end());
 		while(first < last)
@@ -543,7 +474,7 @@ public:
 			return (iterator(v_first + start));
 	}
 
-	void swap(Vector& x)
+	void swap(vector& x)
 	{
 		size_type	temp_size = this->v_size;
 		size_type	temp_capacity = this->v_capacity;
@@ -573,13 +504,13 @@ public:
 };
 
 template <class T, class Alloc>
-bool operator==(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+bool operator==(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	if (lhs.size() == rhs.size())
 	{
 		for (size_t i = 0; i < lhs.size(); i++)
 		{
-			if ((*(lhs.v_first + i)) != (*(lhs.v_first + i)))
+			if (lhs[i] != rhs[i])
 				return (false);
 		}
 	}
@@ -588,38 +519,38 @@ bool operator==(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
 	return (true);
 }
 
-template <class T, class Alloc>
-bool operator!=(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
-{
-	return (lhs != rhs);
-}
+template< class T, class Alloc >
+	bool operator!=( const vector<T,Alloc>& lhs,
+		                 const vector<T,Alloc>& rhs ){
+		return !(lhs == rhs);
+	}
 
 template <class T, class Alloc>
-bool operator<(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+bool operator<(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
 }
 
 template <class T, class Alloc>
-bool operator<= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return !(lhs > rhs);
 }
 
 template <class T, class Alloc>
-bool operator>(const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+bool operator>(const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return (rhs < lhs);
 }
 
 template <class T, class Alloc>
-bool operator>= (const Vector<T,Alloc>& lhs, const Vector<T,Alloc>& rhs)
+bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs)
 {
 	return !(lhs < rhs);
 }
 
 template <class T, class Alloc>
-void swap (Vector<T,Alloc>& x, Vector<T,Alloc>& y)
+void swap (vector<T,Alloc>& x, vector<T,Alloc>& y)
 {
 	x.swap(y);
 }
