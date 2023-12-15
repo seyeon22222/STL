@@ -4,9 +4,9 @@
 # include <iostream>
 # include <memory>
 # include <stdexcept>
-# include "Iterator_traits.hpp"
-# include "Reverse_iterator.hpp"
-# include "Etc_func.hpp"
+# include "../Iterator/Iterator_traits.hpp"
+# include "../Iterator/Reverse_iterator.hpp"
+# include "../Util/Etc_func.hpp"
 
 namespace ft
 {
@@ -406,7 +406,7 @@ public:
 			++i;
 		}
 		for (size_type j = this->v_size; j >= 1 && j >= i; j--)
-			this->copy_construct(i + j + size - 1, this->v_container[j - 1]);
+			this->copy_construct(i + j + size - 1, this->v_first[j - 1]);
 		for (size_type j = 0; j < size; j++)
 			this->copy_construct(i + j, val);
 		this->v_size += size;

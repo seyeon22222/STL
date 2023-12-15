@@ -60,7 +60,11 @@ public:
 		return (temp);
 	}
 
-	DequeIterator operator+(const difference_type& a) const {return (ptr + a);}
+	DequeIterator operator+(const difference_type& a) const 
+	{
+		DequeIterator	temp(*this);
+		return (temp += a);
+	}
 	DequeIterator operator-(const difference_type& a) const {return (ptr - a);}
 	DequeIterator &operator+=(const difference_type& a)
 	{
@@ -121,7 +125,7 @@ public:
 
 
 template < class T, class Alloc = std::allocator<T> >
-class Deque
+class deque
 {
 public:
 	typedef T									value_type;
@@ -185,11 +189,11 @@ private:
 
 public:
 	// default constructor
-	explicit Deque (const allocator_type& alloc = allocator_type())
+	explicit deque (const allocator_type& alloc = allocator_type())
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc) {}
 
 	// fill constructor
-	explicit Deque (size_type n, const value_type& val = value_type(),
+	explicit deque (size_type n, const value_type& val = value_type(),
 	 const allocator_type& alloc = allocator_type())
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
 	{
@@ -198,7 +202,7 @@ public:
 
 	// range constructor
 	template <class InputIterator>
-	Deque (InputIterator first, InputIterator last,
+	deque (InputIterator first, InputIterator last,
 	 const allocator_type& alloc = allocator_type(),
 	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	: dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0), dq_allocator(alloc)
@@ -207,10 +211,10 @@ public:
 		this->assign(first, last);
 	}
 
-	Deque (const Deque& x) : dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0)
+	deque (const deque& x) : dq_first(nullptr), dq_offset(0), dq_size(0), dq_capacity(0)
 	{*this = x;}
 
-	Deque &operator=(const Deque &obj)
+	deque &operator=(const deque &obj)
 	{
 		if (this == &obj)
 			return (*this);
@@ -224,7 +228,7 @@ public:
 		return (*this);
 	}
 
-	virtual ~Deque() 
+	virtual ~deque() 
 	{
 		this->clear();
 		::operator delete(dq_first);
@@ -300,7 +304,7 @@ public:
 	typename enable_if<!is_intergral<InputIterator>::value>::type* = 0) 
 	{
 		if (first > last)
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		this->clear();
 		size_type sub = last - first;
 		if (dq_capacity < sub)
@@ -355,7 +359,7 @@ public:
 	void insert (iterator position, size_type n, const value_type& val)
 	{
 		if (position < begin() || position > end())
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		if (n == 0)
 			return ;
 		size_type i = position.getPtr() - dq_first - dq_offset;
@@ -371,7 +375,7 @@ public:
 	iterator insert (iterator position, const value_type& val)
 	{
 		if (position < begin() || position > end())
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		if (dq_capacity == dq_size)
 			reserve(dq_capacity * 2);
 		size_type i = position.getPtr() - dq_first - dq_offset;
@@ -384,7 +388,7 @@ public:
 	, typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
 	{
 		if (position < begin() || position > end() || first > last)
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		size_type sub = last - first;
 		size_type index = position.getPtr() - dq_first - dq_offset;
 		pre_insert(sub, index);
@@ -401,7 +405,7 @@ public:
 	iterator erase (iterator position)
 	{
 		if (position < begin() || position > end())
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		iterator temp(position);
 		++temp;
 		return (erase(position, temp));
@@ -410,27 +414,38 @@ public:
 	iterator erase (iterator first, iterator last)
 	{
 		if (first > last)
-			throw std::length_error("Deque");
+			throw std::length_error("deque");
 		size_type sub = last - first;
 		size_type start_index = first.getPtr() - dq_first;
 		size_type end_index = last.getPtr() - dq_first;
-		std::cout << start_index << " " << end_index << std::endl;
-		std::cout << "offset : " << dq_offset << std::endl;
-		for (size_type i = 0; i < 32; i++)
-		{
-			std::cout << i << ": " << dq_first[i] << std::endl;
-		}
+		// std::cout << start_index + sub << " "  << end_index << std::endl;
+		// for (size_type i = dq_offset; i < 32 - dq_offset; i++)
+		// {
+		// 	std::cout << dq_first[i] << std::endl;
+		// }
 		for (size_type i = 0; i < sub; i++)
 		{
-			delete this->dq_first[end_index + i];
-			dq_size--;
+			// std::cout << "delete : " << dq_first[start_index + i] << std::endl;
+			delete this->dq_first[start_index + i];
 		}
-		for (size_type i = dq_offset + dq_size, j = 0; i > end_index; i--, j++ )
-			dq_first[start_index + j] = dq_first[i - 1];
-		return (end());
+		// std::cout << "start : " << start_index + sub << " end :" << dq_offset + dq_size << std::endl;
+		for (size_type i = start_index + sub, j = 0; i < dq_offset + dq_size; i++, j++ )
+		{
+			// std::cout << "copy : " << dq_first[start_index + j] << " to " << dq_first[end_index + j] << std::endl;
+			dq_first[start_index + j] = dq_first[end_index + j];
+		}
+		// std::cout << "------------------\n";
+		// for (size_type i = dq_offset; i < 32 - dq_offset; i++)
+		// {
+		// 	std::cout << dq_first[i] << std::endl;
+		// }
+		dq_size -= sub;
+		// std::cout << *iterator(dq_first + dq_offset + dq_size) << std::endl;
+		return (end() - 1);
 	}
+	
 
-	void swap (Deque& x)
+	void swap (deque& x)
 	{
 		size_type temp_size = dq_size;
 		size_type temp_capacity = dq_capacity;
@@ -462,7 +477,7 @@ public:
 };
 
 template <class T, class Alloc>
-bool operator== (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator== (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {
 	if (lhs.size() == rhs.size())
 	{
@@ -478,27 +493,27 @@ bool operator== (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
 }
 
 template <class T, class Alloc>
-bool operator!= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator!= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {return !(lhs == rhs);}
 
 template <class T, class Alloc>
-bool operator<  (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator<  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {return (ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));}
 
 template <class T, class Alloc>
-bool operator<= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator<= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {return (!(rhs < lhs));}
 
 template <class T, class Alloc>
-bool operator>  (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator>  (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {return (rhs < lhs);}
 
 template <class T, class Alloc>
-bool operator>= (const Deque<T,Alloc>& lhs, const Deque<T,Alloc>& rhs)
+bool operator>= (const deque<T,Alloc>& lhs, const deque<T,Alloc>& rhs)
 {return (!(lhs < rhs));}
 
 template <class T, class Alloc>
-void swap (Deque<T,Alloc>& x, Deque<T,Alloc>& y) 
+void swap (deque<T,Alloc>& x, deque<T,Alloc>& y) 
 {
 	x.swap(y);
 }
