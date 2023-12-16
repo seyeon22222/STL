@@ -6,7 +6,7 @@
 /*   By: seykim <seykim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/02 15:57:31 by ncolomer          #+#    #+#             */
-/*   Updated: 2023/12/16 14:49:25 by seykim           ###   ########.fr       */
+/*   Updated: 2023/12/16 20:24:05 by seykim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,16 +176,20 @@ int main(void)
 
 	std::ofstream stdOut("std_out");
     std::cout.rdbuf(stdOut.rdbuf());
-	test_Deque<std::deque<int> >();
-	test_Vector<std::vector<int> >();
+	// test_Deque<std::deque<int> >();
+	// test_Vector<std::vector<int> >();
+	test_Stack<std::stack<int>, std::deque<int> >();
+	test_Stack<std::stack<int, std::vector<int> >, std::vector<int> >();
 	stdOut.close();
 
     std::cout.rdbuf(coutbuf);
 
 	std::ofstream ftOut("ft_out");
     std::cout.rdbuf(ftOut.rdbuf());
-	test_Deque<ft::deque<int> >();
-	test_Vector<ft::vector<int> >();
+	// test_Deque<ft::deque<int> >();
+	// test_Vector<ft::vector<int> >();
+	test_Stack<ft::stack<int>, ft::deque<int> >();
+	test_Stack<ft::stack<int, ft::vector<int> >, ft::vector<int> >();
 	ftOut.close();
 
     std::cout.rdbuf(coutbuf);
