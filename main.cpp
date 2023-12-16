@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: seyeon <seyeon@student.42.fr>              +#+  +:+       +#+        */
+/*   By: seykim <seykim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/02 15:57:31 by ncolomer          #+#    #+#             */
-/*   Updated: 2023/12/15 18:42:59 by seyeon           ###   ########.fr       */
+/*   Updated: 2023/12/16 14:49:25 by seykim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,6 +177,7 @@ int main(void)
 	std::ofstream stdOut("std_out");
     std::cout.rdbuf(stdOut.rdbuf());
 	test_Deque<std::deque<int> >();
+	test_Vector<std::vector<int> >();
 	stdOut.close();
 
     std::cout.rdbuf(coutbuf);
@@ -184,6 +185,7 @@ int main(void)
 	std::ofstream ftOut("ft_out");
     std::cout.rdbuf(ftOut.rdbuf());
 	test_Deque<ft::deque<int> >();
+	test_Vector<ft::vector<int> >();
 	ftOut.close();
 
     std::cout.rdbuf(coutbuf);

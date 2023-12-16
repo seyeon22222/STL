@@ -25,7 +25,7 @@ public:
 	DequeIterator(void) : ptr(nullptr) {}
 	DequeIterator(pointer *a) : ptr(a) {}
 	virtual ~DequeIterator(void) {}
-	DequeIterator(const DequeIterator& obj)	{*this = obj;}
+	DequeIterator(const DequeIterator<typename remove_const<value_type>::type>& obj) : ptr(const_cast<pointer*>(obj.getPtr())) {}
 	DequeIterator &operator=(const DequeIterator &obj)
 	{
 		if (*this == obj)
@@ -152,10 +152,12 @@ private:
 		size_type	temp = 0;
 		if (n > dq_capacity)
 		{
-			if (dq_capacity > 32)
+			if (dq_capacity == 0 && n < 32)
+				temp = 32;
+			else if (dq_capacity > 32 && n < dq_capacity * 2)
 				temp = dq_capacity * 2;
 			else
-				temp = 32;
+				temp = n;
 			pointer *arr = static_cast<pointer*>(::operator new(sizeof(pointer*) * temp));
 			size_type temp_offset = (temp / 2) - (dq_size / 2);
 			for (size_type i = temp_offset, j = dq_offset; j < dq_offset + dq_size; i++, j++)
@@ -329,8 +331,8 @@ public:
 
 	void push_back (const value_type& val)
 	{
-		if (dq_offset + dq_size == dq_capacity)
-			reserve(dq_capacity * 2);
+		if (dq_offset + dq_size >= dq_capacity)
+			reserve(dq_capacity + 1);
 		dq_first[dq_offset + dq_size] = new value_type(val);
 		dq_size++;
 	}
@@ -358,16 +360,15 @@ public:
 
 	void insert (iterator position, size_type n, const value_type& val)
 	{
-		if (position < begin() || position > end())
-			throw std::length_error("deque");
+		
 		if (n == 0)
-			return ;
+			return ;	
 		size_type i = position.getPtr() - dq_first - dq_offset;
 		pre_insert(n, i);
 		size_type index = dq_offset + i;
 		for (size_type j = 0; j < n; j++)
 		{
-			dq_first[index + j - 1] = new value_type(val);
+			dq_first[index + j] = new value_type(val);
 			dq_size++;
 		}
 	}
@@ -376,8 +377,6 @@ public:
 	{
 		if (position < begin() || position > end())
 			throw std::length_error("deque");
-		if (dq_capacity == dq_size)
-			reserve(dq_capacity * 2);
 		size_type i = position.getPtr() - dq_first - dq_offset;
 		insert(position, 1, val);
 		return (dq_first + dq_offset + i);
@@ -390,6 +389,8 @@ public:
 		if (position < begin() || position > end() || first > last)
 			throw std::length_error("deque");
 		size_type sub = last - first;
+		if (sub == 0)
+			return ;
 		size_type index = position.getPtr() - dq_first - dq_offset;
 		pre_insert(sub, index);
 		size_type start = index + dq_offset;
@@ -418,30 +419,12 @@ public:
 		size_type sub = last - first;
 		size_type start_index = first.getPtr() - dq_first;
 		size_type end_index = last.getPtr() - dq_first;
-		// std::cout << start_index + sub << " "  << end_index << std::endl;
-		// for (size_type i = dq_offset; i < 32 - dq_offset; i++)
-		// {
-		// 	std::cout << dq_first[i] << std::endl;
-		// }
 		for (size_type i = 0; i < sub; i++)
-		{
-			// std::cout << "delete : " << dq_first[start_index + i] << std::endl;
 			delete this->dq_first[start_index + i];
-		}
-		// std::cout << "start : " << start_index + sub << " end :" << dq_offset + dq_size << std::endl;
 		for (size_type i = start_index + sub, j = 0; i < dq_offset + dq_size; i++, j++ )
-		{
-			// std::cout << "copy : " << dq_first[start_index + j] << " to " << dq_first[end_index + j] << std::endl;
 			dq_first[start_index + j] = dq_first[end_index + j];
-		}
-		// std::cout << "------------------\n";
-		// for (size_type i = dq_offset; i < 32 - dq_offset; i++)
-		// {
-		// 	std::cout << dq_first[i] << std::endl;
-		// }
 		dq_size -= sub;
-		// std::cout << *iterator(dq_first + dq_offset + dq_size) << std::endl;
-		return (end() - 1);
+		return (end());
 	}
 	
 

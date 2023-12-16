@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   test.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: seyeon <seyeon@student.42.fr>              +#+  +:+       +#+        */
+/*   By: seykim <seykim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/07 17:27:56 by ncolomer          #+#    #+#             */
-/*   Updated: 2023/12/15 18:44:32 by seyeon           ###   ########.fr       */
+/*   Updated: 2023/12/16 14:49:51 by seykim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,14 +19,14 @@
 
 # include <iostream>
 # include "Number.hpp"
-// # include "../Vector/Vector.hpp"
+# include "../Vector/Vector.hpp"
+# include "../Deque/Deque.hpp"
 // # include "include/Vector.hpp"
 // # include "include/List.hpp"
 // # include "include/Stack.hpp"
 // # include "include/Queue.hpp"
 // # include "include/Map.hpp"
 // # include "include/Set.hpp"
-# include "../Deque/Deque.hpp"
 
 # include <vector>
 # include <list>
@@ -140,11 +140,11 @@ void display_container(std::string const &header, Container const &ctn)
 // 	}
 // }
 
-// # include "vector_test.hpp"
+# include "vector_test.hpp"
+# include "deque_test.hpp"
 // # include "list_test.hpp"
 // # include "stack_test.hpp"
 // # include "queue_test.hpp"
-# include "deque_test.hpp"
 // # include "map_test.hpp"
 // # include "set_test.hpp"
 // # include "multimap_test.hpp"
