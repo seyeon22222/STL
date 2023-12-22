@@ -3,6 +3,7 @@
 #include "Vector/Vector.hpp"
 #include "Deque/Deque.hpp"
 #include <deque>
+#include <queue>
 
 int main()
 {
