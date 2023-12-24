@@ -2,6 +2,7 @@
 # define PRIORITY_QUEUE_HPP
 
 # include "../Vector/Vector.hpp"
+# include "../Util/Algorithm.hpp"
 
 namespace ft
 {
