@@ -6,7 +6,7 @@
 /*   By: seykim <seykim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/01/07 17:27:56 by ncolomer          #+#    #+#             */
-/*   Updated: 2023/12/16 20:17:20 by seykim           ###   ########.fr       */
+/*   Updated: 2023/12/24 20:08:16 by seykim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@
 # include "../Stack/Stack.hpp"
 // # include "include/Vector.hpp"
 // # include "include/List.hpp"
-// # include "include/Queue.hpp"
+# include "../Queue/Queue.hpp"
 // # include "include/Map.hpp"
 // # include "include/Set.hpp"
 
@@ -144,7 +144,7 @@ void display_container(std::string const &header, Container const &ctn)
 # include "deque_test.hpp"
 # include "stack_test.hpp"
 // # include "list_test.hpp"
-// # include "queue_test.hpp"
+# include "queue_test.hpp"
 // # include "map_test.hpp"
 // # include "set_test.hpp"
 // # include "multimap_test.hpp"
