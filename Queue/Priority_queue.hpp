@@ -15,49 +15,97 @@ public:
     typedef typename container_type::reference          reference;
     typedef typename container_type::const_reference    const_reference;
     typedef typename container_type::size_type          size_type;
+	typedef typename container_type::difference_type	difference_type;
 
 protected:
     container_type  pq_container;
-    Compare         comp;
+    Compare         pq_comp;
+	int				pq_size;
 public:
     explicit priority_queue (const Compare& comp = Compare(), const Container& ctnr = Container())
-    : pq_container(), comp() 
+	: pq_size(0)
     {
-        std::make_heap(pq_container.begin(), pq_container.end(), comp);
+		this->pq_comp = comp;
+		pq_container.push_back(0);
+		for (size_t i = 1; i < ctnr.size(); i++)
+		{
+			push(ctnr[i]);
+			pq_size++;
+		}
     }
 
     template <class InputIterator>
     priority_queue (InputIterator first, InputIterator last, 
     const Compare& comp = Compare(), const Container& ctnr = Container(),
     typename enable_if<!is_intergral<InputIterator>::value>::type* = 0)
+	: pq_size(0)
     {
-        std::make_heap(first, last, comp);
+        pq_comp = comp;
+		difference_type sub = last - first;
+		for (difference_type i = 1; i < sub; i++)
+		{
+			push(*(first + i));
+			pq_size++;
+		}
     }
 
-    priority_queue (const priority_queue& obj)
-    {
-        *this = obj;
-    }
-
-    priority_queue &operator=(const priority_queue& obj)
-    {
-        if (*this == obj)
-            return (*this);
-        pq_container = obj.pq_container;
-        comp = obj.comp;
-        return (*this);
-    }
-
-    bool empty() const {return (pq_container.empty());}
+    bool empty() const 
+	{
+		if (pq_size)
+			return (false);
+		return (true);
+	}
     size_type size() const {return (pq_container.size());}
-    const value_type& top() const {return (pq_container.top());}
+    const value_type& top() const {return (pq_container.front());}
 
-    // 얘네는 따로 comp에 따라서 정렬을 해서 넣어줘야함
     void push (const value_type& val)
-    {return (std::push_heap(pq_container.begin(), pq_container.end(), comp()));}
-    // 얘네는 따로 comp에 따라서 정렬을 해서 넣어줘야함
+    {
+		pq_size++;
+		this->pq_container.push_back(val);
+		int idx = pq_container.size() - 1;
+		int parent = 0, child = 0;
+		while (idx > 1)
+		{
+			child = idx;
+			parent = (idx - 1) / 2;
+			if (pq_comp(pq_container[parent], pq_container[child]))
+			{
+				value_type temp = pq_container[parent];
+				pq_container[parent] = pq_container[child];
+				pq_container[child] = temp;
+				idx /= 2;
+			}
+			else
+				break;
+		}
+	}
+	void heapify(const int& idx)
+	{
+		int now = idx;
+		int child_L = 2 * idx;
+		int child_R = 2 * idx + 1;
+		if (child_L <= pq_container.size() - 1 && pq_comp(pq_container[now], pq_container[child_L]))
+			now = child_L;
+		if (child_R <= pq_container.size() - 1 && pq_comp(pq_container[now], pq_container[child_R]))
+			now = child_R;
+		if (now != idx)
+		{
+			value_type temp = pq_container[now];
+			pq_container[now] = pq_container[idx];
+			pq_container[idx] = temp;
+			heapify(now);
+		}
+	}	
+
     void pop()
-    {return (std::pop_heap(pq_container.begin(), pq_container.end(), comp());)}
+    {
+		if (empty())
+			return ;
+		pq_container[0] = pq_container[pq_container.size() - 1];
+		pq_container.pop_back();
+		heapify(0);
+		pq_size--;
+	}
 
 };
 }

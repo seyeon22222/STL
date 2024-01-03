@@ -25,7 +25,7 @@ public:
 	DequeIterator(void) : ptr(nullptr) {}
 	DequeIterator(pointer *a) : ptr(a) {}
 	virtual ~DequeIterator(void) {}
-	DequeIterator(const DequeIterator<typename remove_const<value_type>::type>& obj) : ptr(const_cast<pointer*>(obj.getPtr())) {}
+	DequeIterator(const DequeIterator<typename remove_const<value_type>::type>& obj) : ptr((obj.getPtr())) {}
 	DequeIterator &operator=(const DequeIterator &obj)
 	{
 		if (*this == obj)

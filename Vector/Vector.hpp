@@ -241,7 +241,9 @@ public:
 		try
 		{
 			for (size_type i = 0; i < v_size; i++)
+			{
 				v_allocator.construct(temp + i, *(v_first + i));
+			}
 		}
 		catch (std::exception &e)
 		{
@@ -433,7 +435,6 @@ public:
 	{
 		if (position < begin() || position > end())
 			throw std::length_error("vector");
-		// distance -> ptrdiff_t 를 반환( 인자의 거리를 반환해줌)
 		size_type sub = static_cast<size_type>(std::distance(begin(), position));
 		for (size_type i = sub; i < v_size - 1; i++)
 		{
